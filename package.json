@@ -1,14 +1,11 @@
 ﻿{
-    "name":  "render-ingestor",
-    "version":  "1.0.0",
-    "main":  "server.js",
-    "type":  "commonjs",
-    "dependencies":  {
-                         "express":  "^4.18.2",
-                         "body-parser":  "^1.20.2",
-                         "node-fetch":  "^2.7.0"
-                     },
-    "scripts":  {
-                    "start":  "node server.js"
-                }
+  "name": "render-ingestor",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
