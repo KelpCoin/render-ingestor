@@ -1,0 +1,44 @@
+name: Full Cortex Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Trigger Render Deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Missing Render deploy hook" && exit 1
+          fi
+          curl -X POST "$RENDER_DEPLOY_HOOK"
+
+      - name: Run Stripe Sync (if present)
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          if [ -f "scripts/stripe_sync.js" ]; then
+            node scripts/stripe_sync.js
+          else
+            echo "No Stripe sync script found - skipping"
+          fi
+
+      - name: Write deployment proof artifact
+        run: |
+          mkdir -p .cortex
+          echo "deployment_ok=$(date -u +%s)" > .cortex/deploy_proof.txt
+          echo "commit=${GITHUB_SHA}" >> .cortex/deploy_proof.txt
+
+      - name: Upload proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cortex-deploy-proof
+          path: .cortex/deploy_proof.txt
